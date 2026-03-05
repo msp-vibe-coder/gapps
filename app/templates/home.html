@@ -81,7 +81,13 @@ function welcome(){
     return {
         init() {
             this.setWelcomeMessage()
-            this.getTenantInfo()
+            if (this.$store.currentUser.selectedTenant.id) {
+              this.getTenantInfo()
+            } else {
+              this.$watch('$store.currentUser.selectedTenant.id', (val) => {
+                if (val) this.getTenantInfo()
+              })
+            }
         },
         welcomeMessage: "",
         tenantInfo: {},
