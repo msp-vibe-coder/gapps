@@ -25,7 +25,7 @@
 | App name        | `gapps`                                                  |
 | Path prefix     | `/gapps`                                                 |
 | Container port  | 5000                                                     |
-| Routing pattern | **StripPrefix + SCRIPT_NAME** — Traefik strips `/gapps`, Flask WSGI middleware re-adds it for URL generation |
+| Routing pattern | **StripPrefix + APP_PREFIX** — Traefik strips `/gapps`, Flask WSGI middleware re-adds it via SCRIPT_NAME for URL generation |
 | Database        | PostgreSQL 16 (separate container, Docker named volume)  |
 | Auth            | Local credentials (email/password)                       |
 
@@ -33,31 +33,15 @@
 
 ## Prerequisites
 
-### GitHub Repository Access
-
-The deploy script clones from GitHub. Ensure the repo is accessible:
-
-```
-https://github.com/zEric/grc-gapps.git
-```
-
-No SSO or external auth providers are required for the base deployment.
+- SSH access to server: `ssh wapp01admin@10.69.69.10`
+- GitHub repo: `https://github.com/msp-vibe-coder/gapps.git`
+- No SSO or external auth providers required for the base deployment
 
 ---
 
-## Management Repo Registration
+## Docker Compose Configuration
 
-### `apps/gapps/app.conf`
-
-```bash
-REPO_URL=https://github.com/zEric/grc-gapps.git
-APP_NAME="Gapps"
-APP_DESCRIPTION="Security GRC platform — compliance tracking, risk management, policy center"
-APP_PATH=/gapps
-APP_PORT=5000
-```
-
-### `apps/gapps/docker-compose.yml`
+The production `docker-compose.yml` is created directly on the server (not the one in the repo, which is for local dev).
 
 ```yaml
 services:
@@ -70,9 +54,9 @@ services:
     env_file:
       - .env.docker
     environment:
-      - FLASK_CONFIG=production
+      - FLASK_CONFIG=default  # maps to ProductionConfig in config.py
       - SQLALCHEMY_DATABASE_URI=postgresql://${POSTGRES_USER:-db1}:${POSTGRES_PASSWORD:-db1}@gapps-db/${POSTGRES_DB:-db1}
-      - SCRIPT_NAME=/gapps
+      - APP_PREFIX=/gapps
       - HOST_NAME=https://ptswebapps/gapps
     labels:
       - "traefik.enable=true"
@@ -116,7 +100,7 @@ volumes:
   gapps-pgdata:
 ```
 
-> **Why StripPrefix + SCRIPT_NAME?** Flask doesn't natively handle path prefixes like Next.js `basePath`. Traefik's `StripPrefix` removes `/gapps` so Flask sees clean paths (`/login`, `/api/v1/...`). The `SCRIPT_NAME=/gapps` env var triggers WSGI middleware that makes `url_for()` generate `/gapps/...` URLs, and a JavaScript fetch override prepends the prefix to all API calls.
+> **Why StripPrefix + APP_PREFIX?** Flask doesn't natively handle path prefixes like Next.js `basePath`. Traefik's `StripPrefix` removes `/gapps` so Flask sees clean paths (`/login`, `/api/v1/...`). The `APP_PREFIX=/gapps` env var triggers WSGI middleware that sets WSGI `SCRIPT_NAME`, making `url_for()` generate `/gapps/...` URLs, and a JavaScript fetch override prepends the prefix to all API calls. We use `APP_PREFIX` instead of `SCRIPT_NAME` because Gunicorn reads `SCRIPT_NAME` from the process environment and conflicts with Traefik's StripPrefix.
 
 > **Why a separate internal network?** The PostgreSQL container (`gapps-db`) is on `gapps-internal` only — it is not exposed to Traefik or the host. Only the `gapps` app container bridges both networks.
 
@@ -148,7 +132,7 @@ DEFAULT_EMAIL=admin@example.com
 DEFAULT_PASSWORD=admin1234567
 ```
 
-> **Note:** `SQLALCHEMY_DATABASE_URI`, `FLASK_CONFIG`, `SCRIPT_NAME`, and `HOST_NAME` are set in docker-compose.yml's `environment:` block — do not duplicate them here.
+> **Note:** `SQLALCHEMY_DATABASE_URI`, `FLASK_CONFIG`, `APP_PREFIX`, and `HOST_NAME` are set in docker-compose.yml's `environment:` block — do not duplicate them here.
 
 Upload to server:
 ```bash
@@ -162,14 +146,23 @@ scp .env.docker wapp01admin@10.69.69.10:/home/wapp01admin/apps/gapps/.env.docker
 ### First Deploy
 
 ```bash
-# 1. Register app in management repo (app.conf + docker-compose.yml)
-# 2. Upload .env.docker to server
-scp .env.docker wapp01admin@10.69.69.10:/home/wapp01admin/apps/gapps/.env.docker
+# 1. Clone the repo on the server
+ssh wapp01admin@10.69.69.10 "cd /home/wapp01admin/apps && git clone https://github.com/msp-vibe-coder/gapps.git gapps"
 
-# 3. Deploy via management repo
-./scripts/deploy.sh gapps
+# 2. Checkout the correct branch
+ssh wapp01admin@10.69.69.10 "cd /home/wapp01admin/apps/gapps && git checkout feature/reverse-proxy-support"
 
-# 4. Verify containers are running
+# 3. Fix CRLF line endings in shell scripts (repo is from Windows)
+ssh wapp01admin@10.69.69.10 "cd /home/wapp01admin/apps/gapps && find . -name '*.sh' -exec sed -i 's/\r$//' {} +"
+
+# 4. Create .env.docker on the server (see template above)
+
+# 5. Replace docker-compose.yml with production version (see config above)
+
+# 6. Build and start
+ssh wapp01admin@10.69.69.10 "cd /home/wapp01admin/apps/gapps && docker compose up -d --build"
+
+# 7. Verify containers are running
 ssh wapp01admin@10.69.69.10 "docker ps | grep gapps"
 ```
 
@@ -180,10 +173,10 @@ The container automatically checks DB connectivity, initializes models if needed
 ### Redeploy (Updates)
 
 ```bash
-./scripts/deploy.sh gapps
+ssh wapp01admin@10.69.69.10 "cd /home/wapp01admin/apps/gapps && git pull && docker compose up -d --build"
 ```
 
-The deploy script pulls latest code, copies the management repo's docker-compose.yml, and runs `docker compose up -d --build`.
+This pulls the latest code, rebuilds the image, and restarts the container. The production `docker-compose.yml` and `.env.docker` are not in git, so they persist across pulls.
 
 ---
 
@@ -236,7 +229,7 @@ ssh wapp01admin@10.69.69.10 "docker exec gapps python -c \"import psycopg2; psyc
 
 ### Path prefix not working (pages serve at `/` instead of `/gapps/`)
 
-1. Verify `SCRIPT_NAME=/gapps` is set in docker-compose environment
+1. Verify `APP_PREFIX=/gapps` is set in docker-compose environment
 2. Verify `HOST_NAME=https://ptswebapps/gapps` is set in docker-compose environment
 3. Check that Traefik StripPrefix middleware is active:
    ```bash
@@ -266,9 +259,9 @@ scp ./env-docker-backup wapp01admin@10.69.69.10:/home/wapp01admin/apps/gapps/.en
 
 ## Architecture Notes
 
-- **Routing**: StripPrefix + SCRIPT_NAME. Traefik `PathPrefix(/gapps)` matches requests, `StripPrefix` removes `/gapps` before forwarding to Flask. WSGI middleware sets `SCRIPT_NAME=/gapps` so `url_for()` generates prefixed URLs. A global JavaScript `fetch()` override prepends the prefix to all 125+ API calls automatically.
+- **Routing**: StripPrefix + APP_PREFIX. Traefik `PathPrefix(/gapps)` matches requests, `StripPrefix` removes `/gapps` before forwarding to Flask. WSGI middleware reads `APP_PREFIX` and sets WSGI `SCRIPT_NAME=/gapps` so `url_for()` generates prefixed URLs. A global JavaScript `fetch()` override prepends the prefix to all 125+ API calls automatically. We use `APP_PREFIX` instead of `SCRIPT_NAME` because Gunicorn reads `SCRIPT_NAME` from the process environment and expects all incoming URLs to include the prefix — which conflicts with Traefik already having stripped it.
 - **Database**: PostgreSQL 16 in a separate container (`gapps-db`) on an internal-only network. Data persisted in Docker named volume `gapps-pgdata`.
 - **Auto-init**: `run.sh` entrypoint checks DB connectivity, initializes models/tables if needed, then starts Gunicorn. No manual migration step required for first deploy.
 - **Health check**: HTTP check against `/api/v1/health` every 30s. Start period of 60s allows for DB init + model setup.
 - **TLS**: Traefik handles TLS termination. The app runs HTTP internally on port 5000.
-- **Backward compatible**: Without `SCRIPT_NAME` set, the app works at root (`/`) exactly as before — the JavaScript prefix helpers are no-ops when `SCRIPT_ROOT` is empty.
+- **Backward compatible**: Without `APP_PREFIX` set, the app works at root (`/`) exactly as before — the JavaScript prefix helpers are no-ops when `SCRIPT_ROOT` is empty.
