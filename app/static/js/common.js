@@ -136,7 +136,7 @@ function getEditorConfig(selector, readOnly=false) {
         selector: selector,
         statusbar: false,
         promotion: false,
-        content_css: "/static/css/tiny_custom.css"
+        content_css: (window.SCRIPT_ROOT || "") + "/static/css/tiny_custom.css"
     }
     if (readOnly) {
         defaultConfig["readonly"] = true

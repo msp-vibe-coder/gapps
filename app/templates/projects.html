@@ -45,7 +45,7 @@
                         <div class="border border-base-300 rounded-lg p-8 bg-base-200 capitalize">
                             <div class="w-full h-full block">
                                 <div class="flex justify-between">
-                                    <a class="hover:underline flex flex-row my-auto" :href="'/projects/' + project.id">
+                                    <a class="hover:underline flex flex-row my-auto" :href="P('/projects/' + project.id)">
                                         <h3 class="text-lg font-semibold" x-text="project.name"></h3>
                                         <i class="ti ti-external-link ml-1 my-auto"></i>
                                     </a>
@@ -297,7 +297,7 @@
                     <div class="modal-action">
                         <button class="btn" @click="showModal = false">Close</button>
                         <button class="btn text-error" @click="openDeleteModal(selectedItem)">Delete</button>
-                        <a :href="'/projects/'+selectedItem.id" class="btn text-primary">Open Project</a>
+                        <a :href="P('/projects/'+selectedItem.id)" class="btn text-primary">Open Project</a>
                     </div>
                 </div>
             </div>

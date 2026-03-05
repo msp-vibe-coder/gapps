@@ -15,7 +15,7 @@
 {% block navbarLeft%}
 <div class="flex items-center space-x-3">
   <img class="h-5 w-5" src="{{ url_for('static', filename='img/icon.png') }}">
-  <span class="text-xl font-bold capitalize"><a href="/">{{config.APP_NAME}}</a></span>
+  <span class="text-xl font-bold capitalize"><a href="{{ url_for('main.home') }}">{{config.APP_NAME}}</a></span>
 </div>
 {%endblock%}
 
@@ -750,7 +750,7 @@
 												<td>
 													<div x-show="item.file_name" class="flex flex-row gap-x-2">
 														<i class="ti ti-download my-auto"></i>
-														<a :href="'/api/v1/evidence/'+item.id+'/file'" :download="item.file['name']" class="btn btn-xs bg-base-100" x-text="item.file_name"></a>
+														<a :href="P('/api/v1/evidence/'+item.id+'/file')" :download="item.file['name']" class="btn btn-xs bg-base-100" x-text="item.file_name"></a>
 													</div>
 													<div x-show="!item.file_name">
 														No files
@@ -1065,7 +1065,7 @@
 <!--            Bottom navbar-->
 			<div class="flex flex-row gap-x-2 border-t border-base-300">
 				<button @click="updatePolicy" class="btn btn-warning w-1/2">Update</button>
-				<a :href="'/projects/'+projectId+'/policy-center?policy-id='+selectedPolicy.id" class="btn bg-base-100 w-1/2">View Policy<i class="ti ti-arrow-right ml-1 text-xl my-auto"></i></a>
+				<a :href="P('/projects/'+projectId+'/policy-center?policy-id='+selectedPolicy.id)" class="btn bg-base-100 w-1/2">View Policy<i class="ti ti-arrow-right ml-1 text-xl my-auto"></i></a>
 			</div>
 
 		</div>
@@ -1142,7 +1142,7 @@
 														<td class="font-semibold" x-text="selectedEvidence.file_provider.toUpperCase()"></td>
 														<td>
 															<div class="flex flex-row gap-x-4">
-																<a :href="'/api/v1/evidence/'+selectedEvidence.id+'/file'" :download="selectedEvidence.file['name']" class="btn btn-xs bg-base-100">Download</a>
+																<a :href="P('/api/v1/evidence/'+selectedEvidence.id+'/file')" :download="selectedEvidence.file['name']" class="btn btn-xs bg-base-100">Download</a>
 															</div>
 														</td>
 													  </tr>
@@ -1936,9 +1936,9 @@
 							<h2 class="card-title" x-text="'Project Policies ('+policies.length+')'"></h2>
 							<div class="flex flex-row gap-x-2">
 								<div class="space-x-2 flex">
-									<a :href="'/projects/'+projectId+'/policy-center?create=true'" class="btn btn-xs capitalize btn-ghost text-success bg-base-100 text-xs"
+									<a :href="P('/projects/'+projectId+'/policy-center?create=true')" class="btn btn-xs capitalize btn-ghost text-success bg-base-100 text-xs"
 											 >Add Policy</a>
-									<a :href="'/projects/'+projectId+'/policy-center'" class="btn btn-xs capitalize btn-ghost bg-base-100 text-xs"
+									<a :href="P('/projects/'+projectId+'/policy-center')" class="btn btn-xs capitalize btn-ghost bg-base-100 text-xs"
 											 >Policy Center</a>
 								</div>
 							</div>
@@ -1950,7 +1950,7 @@
 							  <p class="py-6">
 								You have not added any policies to you project. Let's add some, make edits and publish them.
 							  </p>
-							  <a :href="'/projects/'+projectId+'/policy-center?create=true'" class="btn btn-sm capitalize btn-primary text-xs"
+							  <a :href="P('/projects/'+projectId+'/policy-center?create=true')" class="btn btn-sm capitalize btn-primary text-xs"
 											 >Add Policy</a>
 							</div>
 						  </div>
@@ -2900,7 +2900,7 @@
 					</button>
 				</form>
 				<h2 class="py-2 text-xl font-semibold px-6">Add Policy</h2>
-				<p class="px-6">Once a policy is added to your project, you can make any required changes. You can visit the <a class="underline" :href="'/projects/'+projectId+'/policy-center'">policy center</a> to view/edit all your project policies.</p>
+				<p class="px-6">Once a policy is added to your project, you can make any required changes. You can visit the <a class="underline" :href="P('/projects/'+projectId+'/policy-center')">policy center</a> to view/edit all your project policies.</p>
 				<div class="grid grid-cols-10 gap-6 px-6 mt-4">
 					<div class="col-span-10">
 						<label class="block text-sm font-medium mb-2">Add Policy from Template</label>
@@ -2933,7 +2933,7 @@
 						<div role="alert" class="alert bg-base-200 px-6">
 							<i class="ti ti-alert-triangle text-md"></i>
 							<span class="text-xs">Before a user is added to the project, they must first be invited to your Tenant.</span>
-							<a href="/users" class="btn btn-xs btn-success">Tenant Users</a>
+							<a href="{{ url_for('main.tenant_users') }}" class="btn btn-xs btn-success">Tenant Users</a>
 						</div>
 					</div>
 					<div class="col-span-5">
@@ -3187,7 +3187,7 @@
 				<div class="modal-action">
 					<button class="btn" @click="showPolicyModal=false">Close</button>
 					<button @click="updatePolicy" class="btn">Update</button>
-					<a :href="'/projects/'+projectId+'/policies/'+selectedPolicy.id" class="btn">View Policy</a>
+					<a :href="P('/projects/'+projectId+'/policies/'+selectedPolicy.id)" class="btn">View Policy</a>
 
 				</div>
 			</div>
@@ -3577,7 +3577,7 @@
 								<td>
 									<div class="flex flex-row gap-x-4">
 <!--                                        <button @click="deleteEvidenceFile(selectedEvidence)" class="btn btn-xs btn-error"><i class="ti ti-trash"></i></button>-->
-										<a :href="'/api/v1/evidence/'+selectedEvidence.id+'/file'" :download="selectedEvidence.file['name']" class="btn btn-xs bg-base-100">Download</a>
+										<a :href="P('/api/v1/evidence/'+selectedEvidence.id+'/file')" :download="selectedEvidence.file['name']" class="btn btn-xs bg-base-100">Download</a>
 									</div>
 								</td>
 							  </tr>

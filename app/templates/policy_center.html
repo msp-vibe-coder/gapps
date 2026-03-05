@@ -23,7 +23,7 @@
 <div class="h-96 bg-base-300" x-data="editorInstance()">
     <div class="flex h-screen">
         <div x-show="!preview" class="w-64 bg-base-100 px-6 py-4 flex flex-col border-r border-base-300">
-            <h1 class="text-xl font-bold mb-2"><a :href="'/projects/'+projectId+'?tab=policies'" class="btn btn-sm btn-ghost mr-1 my-auto"><i class="ti ti-arrow-left text-xl"></i></a>Policy Center</h1>
+            <h1 class="text-xl font-bold mb-2"><a :href="P('/projects/'+projectId+'?tab=policies')" class="btn btn-sm btn-ghost mr-1 my-auto"><i class="ti ti-arrow-left text-xl"></i></a>Policy Center</h1>
             <div class="mb-4">
                 <div @click="openPolicyDrawer;openEditPolicy(selectedPolicy)" class="bg-base-300 py-2 px-3 text-xs rounded-lg font-medium hover:cursor-pointer flex flex-row gap-x-1">
                     <i x-show="!selectedPolicy.reviewer" class="ti ti-alert-triangle text-error my-auto"></i>

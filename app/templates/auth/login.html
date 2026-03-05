@@ -8,7 +8,7 @@
       <div class="mb-5">
         <h3 class=" text-4xl font-extrabold mt-10">Login</h3>
         {%if config.IS_SELF_REGISTRATION_ENABLED %}
-        <p class="text-sm my-2">Interested? <a href="/register" class="text-primary font-semibold hover:underline ml-1 whitespace-nowrap">Sign up here</a></p>
+        <p class="text-sm my-2">Interested? <a href="{{ url_for('auth.get_register') }}" class="text-primary font-semibold hover:underline ml-1 whitespace-nowrap">Sign up here</a></p>
         {%endif%}
       </div>
       <div class="mb-4">
@@ -21,7 +21,7 @@
       <div class="mb-4">
         <div class="flex justify-between">
             <label class="text-sm block mb-1">Password</label>
-            <a href="/reset-password" class="text-primary font-semibold hover:underline ml-1 whitespace-nowrap text-xs">Forgot Password?</a>
+            <a href="{{ url_for('auth.reset_password_request') }}" class="text-primary font-semibold hover:underline ml-1 whitespace-nowrap text-xs">Forgot Password?</a>
         </div>
         <label class="input input-sm input-bordered flex items-center gap-2">
           <i class="ti ti-lock"></i>

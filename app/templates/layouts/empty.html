@@ -16,6 +16,19 @@
     {% else %}
     <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet" type="text/css" />
     {% endif %}
+    <script>
+      window.SCRIPT_ROOT = "{{ request.script_root }}";
+      window.P = function(path) { return (window.SCRIPT_ROOT || '') + path; };
+      if (window.SCRIPT_ROOT) {
+        const _fetch = window.fetch;
+        window.fetch = function(input, init) {
+          if (typeof input === 'string' && input.startsWith('/')) {
+            input = window.SCRIPT_ROOT + input;
+          }
+          return _fetch.call(this, input, init);
+        };
+      }
+    </script>
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">

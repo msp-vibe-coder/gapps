@@ -53,6 +53,19 @@
     <script src="https://cdn.jsdelivr.net/npm/theme-change@2.0.2/index.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">
+    <script>
+      window.SCRIPT_ROOT = "{{ request.script_root }}";
+      window.P = function(path) { return (window.SCRIPT_ROOT || '') + path; };
+      if (window.SCRIPT_ROOT) {
+        const _fetch = window.fetch;
+        window.fetch = function(input, init) {
+          if (typeof input === 'string' && input.startsWith('/')) {
+            input = window.SCRIPT_ROOT + input;
+          }
+          return _fetch.call(this, input, init);
+        };
+      }
+    </script>
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <style>
       [x-cloak] { display: none !important; }
@@ -118,9 +131,9 @@
       <nav x-cloak @mouseover="isSidebarOpen=true" class="flex-1 overflow-hidden hover:overflow-y-auto">
         <ul class="p-2 overflow-hidden text-sm font-semibold">
           {%if "vendor" in user_roles%}
-          {% set sidebarlinks = [{'label':'home','link':'/','icon':'<i class="ti ti-timeline text-2xl"></i>'}]%}
+          {% set sidebarlinks = [{'label':'home','link': url_for('main.home'),'icon':'<i class="ti ti-timeline text-2xl"></i>'}]%}
           {%else%}
-          {% set sidebarlinks = [{'label':'home','link':'/','icon':'<i class="ti ti-home text-2xl"></i>'},{'label':'tenants','link':'/tenants','icon':'<i class="ti ti-building-skyscraper text-2xl"></i>'},{'label':'projects','link':'/projects','icon':'<i class="ti ti-circles text-2xl"></i>'}, {'label':'integrations','link':'/integrations','icon':'<i class="ti ti-car-fan text-2xl"></i>'}]%}
+          {% set sidebarlinks = [{'label':'home','link': url_for('main.home'),'icon':'<i class="ti ti-home text-2xl"></i>'},{'label':'tenants','link': url_for('main.tenants'),'icon':'<i class="ti ti-building-skyscraper text-2xl"></i>'},{'label':'projects','link': url_for('main.projects'),'icon':'<i class="ti ti-circles text-2xl"></i>'}, {'label':'integrations','link': url_for('main.integrations'),'icon':'<i class="ti ti-car-fan text-2xl"></i>'}]%}
           {%endif%}
           {%for link in sidebarlinks%}
           <li class="mb-4">
@@ -182,14 +195,14 @@
                 </svg>
               </span>
             </a>
-            {% set more_links = [{'label':'tenant users','link':'/users'}] %}
+            {% set more_links = [{'label':'tenant users','link': url_for('main.tenant_users')}] %}
             {%for link in more_links%}
             <div arial-label="More" class="mt-2 space-y-2 px-7" role="menu" x-show="open">
               <a href="{{link["link"]}}" :class="{ 'lg:hidden': !isSidebarOpen }" class="block p-2 text-sm transition-colors duration-200 rounded-md capitalize hover:bg-base-100">{{link["label"]}}</a>
             </div>
             {%endfor%}
             {%if current_user.super%}
-            {%for link in [{'label':'Instance Users','link':'/admin/users'},{'label':'settings','link':'/admin/settings'},{'label':'logs','link':'/logs'}] %}
+            {%for link in [{'label':'Instance Users','link': url_for('main.users')},{'label':'settings','link': url_for('main.settings')},{'label':'logs','link': url_for('main.logs')}] %}
             <div arial-label="More" class="mt-2 space-y-2 px-7" role="menu" x-show="open">
               <a href="{{link["link"]}}" :class="{ 'lg:hidden': !isSidebarOpen }" class="block p-2 text-sm transition-colors duration-200 rounded-md capitalize hover:bg-base-100">{{link["label"]}}</a>
             </div>
@@ -275,7 +288,7 @@
             {% block navbarLeft%}
             <!-- Navbar left -->
             <div class="flex items-center space-x-3">
-              <span class="text-xl font-bold capitalize {%if layout["hide-app-name"]%}lg:hidden{%endif%}"><a href="/">{{config.APP_NAME}}</a></span>
+              <span class="text-xl font-bold capitalize {%if layout["hide-app-name"]%}lg:hidden{%endif%}"><a href="{{ url_for('main.home') }}">{{config.APP_NAME}}</a></span>
               <!-- Toggle sidebar button -->
               <button x-show="hasSidebar" @click="toggleSidebarMenu()" id="toggle-sidebar-btn" class="p-2 rounded-md btn btn-ghost hover:bg-base-200 btn-sm">
                 <svg :class="{'transform transition-transform -rotate-180': isSidebarOpen}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -684,7 +697,7 @@
                   this.setTenant(newValue)
             })
             this.riskLinks = [
-                { 'label': 'Risk Register', 'link': `/tenants/${this.selectedTenant.id}/risk` },
+                { 'label': 'Risk Register', 'link': `${window.SCRIPT_ROOT || ''}/tenants/${this.selectedTenant.id}/risk` },
             ];
           },
           riskLinks: [],
@@ -714,7 +727,7 @@
                 console.log("Updated tenant in session")
                 this.setTenant(tenant.id)
                 setTimeout(() => {
-                    window.location.href = "/";
+                    window.location.href = (window.SCRIPT_ROOT || "") + "/";
                 }, 1500);
               },
               error => {
@@ -789,7 +802,7 @@
                 this.tenants = data;
                 this.$store.currentUser.tenants = data;
                 if (data.length === 0) {
-                  toast("Please create a tenant <a href='/tenants' class='btn btn-xs btn-ghost ml-1'><i class='ti ti-arrow-right text-lg'></i></a>", "warning")
+                  toast("Please create a tenant <a href='" + (window.SCRIPT_ROOT || "") + "/tenants' class='btn btn-xs btn-ghost ml-1'><i class='ti ti-arrow-right text-lg'></i></a>", "warning")
                 }
                 else if (data.length === 1) {
                   this.selectedTenantId = data[0].id;

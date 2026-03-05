@@ -83,7 +83,7 @@ function confirm(){
                 data => {
                     toast("User confirmed. Redirecting to home.")
                     setTimeout(function() {
-                        window.location.href = "/"
+                        window.location.href = (window.SCRIPT_ROOT || "") + "/"
                     }, 2000);
                     this.tryResend = false
                 },

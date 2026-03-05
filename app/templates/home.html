@@ -33,7 +33,7 @@
                   <i class="ti ti-brand-asana my-auto"></i>
                   <span x-text="tenantInfo.projects"></span>
                 </div>
-                <a href="/projects" class="btn btn-sm my-auto">Continue<i class="ti ti-arrow-right text-lg my-auto"></i></a>
+                <a href="{{ url_for('main.projects') }}" class="btn btn-sm my-auto">Continue<i class="ti ti-arrow-right text-lg my-auto"></i></a>
               </div>
             </div>
           </div>
@@ -48,7 +48,7 @@
                   <i class="ti ti-flag-exclamation my-auto"></i>
                   <span x-text="tenantInfo.risks"></span>
                 </div>
-                <a :href="'/tenants/'+selectedTenantId+'/risk'" class="btn btn-sm my-auto">Continue<i class="ti ti-arrow-right text-lg my-auto"></i></a>
+                <a :href="P('/tenants/'+selectedTenantId+'/risk')" class="btn btn-sm my-auto">Continue<i class="ti ti-arrow-right text-lg my-auto"></i></a>
               </div>
             </div>
           </div>
@@ -63,7 +63,7 @@
                   <i class="ti ti-users my-auto"></i>
                   <span x-text="tenantInfo.users"></span>
                 </div>
-                <a href="/users" class="btn btn-sm my-auto">Continue<i class="ti ti-arrow-right text-lg my-auto"></i></a>
+                <a href="{{ url_for('main.tenant_users') }}" class="btn btn-sm my-auto">Continue<i class="ti ti-arrow-right text-lg my-auto"></i></a>
               </div>
             </div>
           </div>

@@ -24,11 +24,14 @@ def parse_url_with_defaults(url, default_scheme="http", default_port=5000):
     else:
         port = parsed_url.port or default_port
 
+    # Preserve path (e.g. /gapps from HOST_NAME=https://ptswebapps/gapps)
+    path = parsed_url.path.rstrip("/")
+
     # Construct the full URL
     if (scheme == "http" and port == 80) or (scheme == "https" and port == 443):
-        full_url = f"{scheme}://{host_name}/"
+        full_url = f"{scheme}://{host_name}{path}/"
     else:
-        full_url = f"{scheme}://{host_name}:{port}/"
+        full_url = f"{scheme}://{host_name}:{port}{path}/"
 
     return scheme, host_name, port, full_url
 

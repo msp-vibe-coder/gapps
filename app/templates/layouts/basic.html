@@ -18,6 +18,19 @@
     {% endif %}
 
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script>
+      window.SCRIPT_ROOT = "{{ request.script_root }}";
+      window.P = function(path) { return (window.SCRIPT_ROOT || '') + path; };
+      if (window.SCRIPT_ROOT) {
+        const _fetch = window.fetch;
+        window.fetch = function(input, init) {
+          if (typeof input === 'string' && input.startsWith('/')) {
+            input = window.SCRIPT_ROOT + input;
+          }
+          return _fetch.call(this, input, init);
+        };
+      }
+    </script>
     <script src="{{ url_for('static', filename='js/common.js') }}"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.30.0/dist/tabler-icons.min.css">

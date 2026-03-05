@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from authlib.integrations.flask_client import OAuth
 from sqlalchemy import exc
 import logging
+import os
 
 
 db = SQLAlchemy()
@@ -34,6 +35,19 @@ def create_app(config_name="default"):
     def before_request():
         pass
     """
+
+    from werkzeug.middleware.proxy_fix import ProxyFix
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    script_name = os.environ.get("SCRIPT_NAME", "")
+    if script_name:
+        app.config["SCRIPT_NAME"] = script_name
+        _inner_wsgi = app.wsgi_app
+        def _prefix_middleware(environ, start_response):
+            environ["SCRIPT_NAME"] = script_name
+            return _inner_wsgi(environ, start_response)
+        app.wsgi_app = _prefix_middleware
 
     return app
 
