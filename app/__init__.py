@@ -40,7 +40,7 @@ def create_app(config_name="default"):
 
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
-    script_name = os.environ.get("SCRIPT_NAME", "")
+    script_name = os.environ.get("APP_PREFIX", "")
     if script_name:
         app.config["SCRIPT_NAME"] = script_name
         _inner_wsgi = app.wsgi_app
