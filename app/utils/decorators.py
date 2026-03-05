@@ -57,7 +57,7 @@ def login_required(view_function):
             custom_login(user)
         else:
             if not current_user.is_authenticated:
-                return redirect(url_for("auth.get_login", next=request.full_path))
+                return redirect(url_for("auth.get_login", next=request.url))
 
             if not current_user.is_active:
                 logout_user()
