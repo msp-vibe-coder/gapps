@@ -73,7 +73,7 @@ class idToButton {
   init(params) {
     this.eGui = document.createElement('div');
     this.eGui.classList.add('flex', 'items-center');
-    let link = params.link.replace("{value}", params.value);
+    let link = (window.SCRIPT_ROOT || '') + params.link.replace("{value}", params.value);
     if (!params.text) {
         params.text = "<i class='ti ti-external-link text-lg'></i>"
     }
